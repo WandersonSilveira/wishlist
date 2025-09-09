@@ -9,6 +9,8 @@ import com.br.wishlist.validation.WishlistValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class WishlistService {
     @Autowired
@@ -33,10 +35,22 @@ public class WishlistService {
     public Wishlist removerProdutoDaWishlist(String clienteId, String produtoId) {
         Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
         boolean produtoExiste = WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId);
+
         if (!produtoExiste) {
             throw new RuntimeException("Produto não encontrado na wishlist.");
         }
+
         wishlist.getProdutos().removeIf(p -> p.getId().equals(produtoId));
         return wishlistRepository.save(wishlist);
+    }
+
+    public List<Produto> consultarProdutosDaWishlist(String clienteId) {
+        Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
+
+        if (wishlist == null || wishlist.getProdutos() == null || wishlist.getProdutos().isEmpty()) {
+            throw new RuntimeException("Wishlist não encontrada ou vazia.");
+        }
+
+        return wishlist.getProdutos();
     }
 }

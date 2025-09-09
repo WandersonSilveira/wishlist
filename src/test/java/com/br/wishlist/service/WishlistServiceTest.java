@@ -148,4 +148,34 @@ class WishlistServiceTest {
         assertEquals(1, result.getProdutos().size());
         assertEquals("p2", result.getProdutos().get(0).getId());
     }
+
+    @Test
+    void deveConsultarProdutosDaWishlistComSucesso() {
+        String clienteId = "1";
+        Produto produto1 = new Produto();
+        produto1.setId("p1");
+        Produto produto2 = new Produto();
+        produto2.setId("p2");
+        ArrayList<Produto> produtos = new ArrayList<>();
+        produtos.add(produto1);
+        produtos.add(produto2);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        var result = wishlistService.consultarProdutosDaWishlist(clienteId);
+        assertEquals(2, result.size());
+        assertEquals("p1", result.get(0).getId());
+        assertEquals("p2", result.get(1).getId());
+    }
+
+    @Test
+    void deveLancarExcecaoAoConsultarProdutosQuandoWishlistVazia() {
+        String clienteId = "1";
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(new ArrayList<>());
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        assertThrows(RuntimeException.class, () -> wishlistService.consultarProdutosDaWishlist(clienteId));
+    }
 }

@@ -70,4 +70,42 @@ class WishlistControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
+
+    @Test
+    void deveConsultarProdutosDaWishlistComSucesso() throws Exception {
+        com.br.wishlist.entity.Produto produto1 = new com.br.wishlist.entity.Produto();
+        produto1.setId("p1");
+        com.br.wishlist.entity.Produto produto2 = new com.br.wishlist.entity.Produto();
+        produto2.setId("p2");
+        java.util.List<com.br.wishlist.entity.Produto> produtos = new java.util.ArrayList<>();
+        produtos.add(produto1);
+        produtos.add(produto2);
+        when(wishlistService.consultarProdutosDaWishlist(anyString())).thenReturn(produtos);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value("p1"))
+                .andExpect(jsonPath("$[1].id").value("p2"));
+    }
+
+    @Test
+    void deveRetornar404AoConsultarProdutosQuandoWishlistVazia() throws Exception {
+        when(wishlistService.consultarProdutosDaWishlist(anyString()))
+                .thenThrow(new RuntimeException("Wishlist não encontrada ou vazia."));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deveRetornar500AoConsultarProdutosQuandoServiceLancaExcecao() throws Exception {
+        when(wishlistService.consultarProdutosDaWishlist(anyString()))
+                .thenThrow(new IllegalStateException("Erro inesperado"));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
 }

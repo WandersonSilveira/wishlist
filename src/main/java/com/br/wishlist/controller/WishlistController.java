@@ -32,6 +32,9 @@ public class WishlistController {
             Wishlist wishlist = wishlistService.removerProdutoDaWishlist(clienteId, produtoId);
             return ResponseEntity.ok(wishlist);
         } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Wishlist não encontrada.")) {
+                return ResponseEntity.status(404).body("Wishlist não encontrada.");
+            }
             return ResponseEntity.status(500).body("Erro ao remover produto: " + e.getMessage());
         }
     }
@@ -46,6 +49,19 @@ public class WishlistController {
                 return ResponseEntity.status(404).body("Wishlist não encontrada ou vazia.");
             }
             return ResponseEntity.status(500).body("Erro ao consultar produtos: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{clienteId}/produtos/{produtoId}/existe")
+    public ResponseEntity<?> produtoEstaNaWishlist(@PathVariable String clienteId, @PathVariable String produtoId) {
+        try {
+            boolean existe = wishlistService.produtoEstaNaWishlist(clienteId, produtoId);
+            return ResponseEntity.ok(existe);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Wishlist não encontrada.")) {
+                return ResponseEntity.status(404).body("Wishlist não encontrada.");
+            }
+            return ResponseEntity.status(500).body("Erro ao consultar produto: " + e.getMessage());
         }
     }
 }

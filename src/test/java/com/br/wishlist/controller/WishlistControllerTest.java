@@ -108,4 +108,40 @@ class WishlistControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
+
+    @Test
+    void deveRetornarTrueQuandoProdutoEstaNaWishlist() throws Exception {
+        when(wishlistService.produtoEstaNaWishlist(anyString(), anyString())).thenReturn(true);
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos/p1/existe")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    void deveRetornarFalseQuandoProdutoNaoEstaNaWishlist() throws Exception {
+        when(wishlistService.produtoEstaNaWishlist(anyString(), anyString())).thenReturn(false);
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos/p1/existe")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+    }
+
+    @Test
+    void deveRetornar404QuandoWishlistNaoExisteAoConsultarProduto() throws Exception {
+        when(wishlistService.produtoEstaNaWishlist(anyString(), anyString()))
+                .thenThrow(new RuntimeException("Wishlist não encontrada."));
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos/p1/existe")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deveRetornar500QuandoServiceLancaExcecaoAoConsultarProduto() throws Exception {
+        when(wishlistService.produtoEstaNaWishlist(anyString(), anyString()))
+                .thenThrow(new IllegalStateException("Erro inesperado"));
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/wishlist/c1/produtos/p1/existe")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
 }

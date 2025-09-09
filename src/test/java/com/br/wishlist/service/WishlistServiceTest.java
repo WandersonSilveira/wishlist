@@ -178,4 +178,41 @@ class WishlistServiceTest {
         when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
         assertThrows(RuntimeException.class, () -> wishlistService.consultarProdutosDaWishlist(clienteId));
     }
+
+    @Test
+    void deveRetornarTrueQuandoProdutoEstaNaWishlist() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Produto produto = new Produto();
+        produto.setId(produtoId);
+        ArrayList<Produto> produtos = new ArrayList<>();
+        produtos.add(produto);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        boolean existe = wishlistService.produtoEstaNaWishlist(clienteId, produtoId);
+        assertTrue(existe);
+    }
+
+    @Test
+    void deveRetornarFalseQuandoProdutoNaoEstaNaWishlist() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        ArrayList<Produto> produtos = new ArrayList<>();
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        boolean existe = wishlistService.produtoEstaNaWishlist(clienteId, produtoId);
+        assertFalse(existe);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoWishlistNaoExisteAoConsultarProduto() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(null);
+        assertThrows(RuntimeException.class, () -> wishlistService.produtoEstaNaWishlist(clienteId, produtoId));
+    }
 }

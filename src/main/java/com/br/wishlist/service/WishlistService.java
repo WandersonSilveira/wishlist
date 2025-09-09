@@ -53,4 +53,12 @@ public class WishlistService {
 
         return wishlist.getProdutos();
     }
+
+    public boolean produtoEstaNaWishlist(String clienteId, String produtoId) {
+        Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
+        if (wishlist == null || wishlist.getProdutos() == null) {
+            throw new RuntimeException("Wishlist não encontrada.");
+        }
+        return WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId);
+    }
 }

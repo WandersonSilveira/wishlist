@@ -29,4 +29,14 @@ public class WishlistService {
         }
         return wishlistRepository.save(wishlist);
     }
+
+    public Wishlist removerProdutoDaWishlist(String clienteId, String produtoId) {
+        Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
+        boolean produtoExiste = WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId);
+        if (!produtoExiste) {
+            throw new RuntimeException("Produto não encontrado na wishlist.");
+        }
+        wishlist.getProdutos().removeIf(p -> p.getId().equals(produtoId));
+        return wishlistRepository.save(wishlist);
+    }
 }

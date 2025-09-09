@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -100,5 +99,53 @@ class WishlistServiceTest {
         when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
         when(produtoFacade.buscarProdutoPorId(produtoId)).thenReturn(produto);
         assertThrows(RuntimeException.class, () -> wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId));
+    }
+
+    @Test
+    void deveRemoverProdutoDaWishlist() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Produto produto = new Produto();
+        produto.setId(produtoId);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        ArrayList<Produto> produtos = new ArrayList<>();
+        produtos.add(produto);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(wishlistRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        Wishlist result = wishlistService.removerProdutoDaWishlist(clienteId, produtoId);
+        assertTrue(result.getProdutos().isEmpty());
+    }
+
+    @Test
+    void deveLancarExcecaoAoRemoverProdutoInexistente() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(new ArrayList<>());
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        assertThrows(RuntimeException.class, () -> wishlistService.removerProdutoDaWishlist(clienteId, produtoId));
+    }
+
+    @Test
+    void deveRemoverApenasProdutoCorretoDaWishlist() {
+        String clienteId = "1";
+        Produto produto1 = new Produto();
+        produto1.setId("p1");
+        Produto produto2 = new Produto();
+        produto2.setId("p2");
+        ArrayList<Produto> produtos = new ArrayList<>();
+        produtos.add(produto1);
+        produtos.add(produto2);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(wishlistRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        Wishlist result = wishlistService.removerProdutoDaWishlist(clienteId, "p1");
+        assertEquals(1, result.getProdutos().size());
+        assertEquals("p2", result.getProdutos().get(0).getId());
     }
 }

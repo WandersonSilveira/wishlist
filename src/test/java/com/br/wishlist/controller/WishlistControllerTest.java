@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WishlistController.class)
@@ -42,6 +43,30 @@ class WishlistControllerTest {
                 .thenThrow(new RuntimeException("Erro ao adicionar produto"));
 
         mockMvc.perform(post("/api/wishlist/c1/produtos/p1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void deveRemoverProdutoDaWishlistComSucesso() throws Exception {
+        Wishlist wishlist = new Wishlist();
+        wishlist.setId("w1");
+        wishlist.setClienteId("c1");
+        when(wishlistService.removerProdutoDaWishlist(anyString(), anyString())).thenReturn(wishlist);
+
+        mockMvc.perform(delete("/api/wishlist/c1/produtos/p1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("w1"))
+                .andExpect(jsonPath("$.clienteId").value("c1"));
+    }
+
+    @Test
+    void deveRetornar500AoRemoverProdutoQuandoServiceLancaExcecao() throws Exception {
+        when(wishlistService.removerProdutoDaWishlist(anyString(), anyString()))
+                .thenThrow(new IllegalStateException("Erro inesperado"));
+
+        mockMvc.perform(delete("/api/wishlist/c1/produtos/p1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }

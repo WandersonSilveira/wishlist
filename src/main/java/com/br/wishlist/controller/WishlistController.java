@@ -22,4 +22,14 @@ public class WishlistController {
             return ResponseEntity.status(500).body("Erro ao adicionar produto: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/{clienteId}/produtos/{produtoId}")
+    public ResponseEntity<?> removerProdutoDaWishlist(@PathVariable String clienteId, @PathVariable String produtoId) {
+        try {
+            Wishlist wishlist = wishlistService.removerProdutoDaWishlist(clienteId, produtoId);
+            return ResponseEntity.ok(wishlist);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body("Erro ao remover produto: " + e.getMessage());
+        }
+    }
 }

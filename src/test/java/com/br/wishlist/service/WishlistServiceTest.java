@@ -1,0 +1,104 @@
+package com.br.wishlist.service;
+
+import com.br.wishlist.entity.Produto;
+import com.br.wishlist.entity.Wishlist;
+import com.br.wishlist.facade.ProdutoFacade;
+import com.br.wishlist.facade.WishlistFacade;
+import com.br.wishlist.repository.ProdutoRepository;
+import com.br.wishlist.repository.WishlistRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class WishlistServiceTest {
+    @Mock
+    private WishlistRepository wishlistRepository;
+    @Mock
+    private ProdutoRepository produtoRepository;
+    @Mock
+    private WishlistFacade wishlistFacade;
+    @Mock
+    private ProdutoFacade produtoFacade;
+    @InjectMocks
+    private WishlistService wishlistService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void deveAdicionarProdutoNaWishlist() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Produto produto = new Produto();
+        produto.setId(produtoId);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(new ArrayList<>());
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(produtoFacade.buscarProdutoPorId(produtoId)).thenReturn(produto);
+        when(wishlistRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        Wishlist result = wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId);
+        assertEquals(1, result.getProdutos().size());
+        assertEquals(produtoId, result.getProdutos().get(0).getId());
+    }
+
+    @Test
+    void naoDeveAdicionarProdutoDuplicadoNaWishlist() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Produto produto = new Produto();
+        produto.setId(produtoId);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        ArrayList<Produto> produtos = new ArrayList<>();
+        produtos.add(produto);
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(produtoFacade.buscarProdutoPorId(produtoId)).thenReturn(produto);
+        when(wishlistRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        Wishlist result = wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId);
+        assertEquals(1, result.getProdutos().size());
+    }
+
+    @Test
+    void deveLancarExcecaoSeProdutoNaoEncontrado() {
+        String clienteId = "1";
+        String produtoId = "p1";
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        wishlist.setProdutos(new ArrayList<>());
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(produtoFacade.buscarProdutoPorId(produtoId)).thenThrow(new RuntimeException("Produto não encontrado"));
+        assertThrows(RuntimeException.class, () -> wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId));
+    }
+
+    @Test
+    void deveLancarExcecaoSeLimiteDeProdutosAtingido() {
+        String clienteId = "1";
+        String produtoId = "p21";
+        Produto produto = new Produto();
+        produto.setId(produtoId);
+        Wishlist wishlist = new Wishlist();
+        wishlist.setClienteId(clienteId);
+        ArrayList<Produto> produtos = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Produto p = new Produto();
+            p.setId("p" + i);
+            produtos.add(p);
+        }
+        wishlist.setProdutos(produtos);
+        when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
+        when(produtoFacade.buscarProdutoPorId(produtoId)).thenReturn(produto);
+        assertThrows(RuntimeException.class, () -> wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId));
+    }
+}

@@ -28,21 +28,17 @@ API RESTful desenvolvida em Java com Spring Boot para gerenciamento de wishlists
      ```
      ./mvnw spring-boot:run
      ```
-   - Ou, se estiver no Windows:
-     ```
-     mvnw.cmd spring-boot:run
-     ```
 
 ## Endpoints principais
 
 - **Adicionar produto à wishlist:**
-  - `POST /wishlist/{clienteId}/produtos/{produtoId}`
+  - `POST /api/wishlist/{clienteId}/produtos/{produtoId}`
 - **Remover produto da wishlist:**
-  - `DELETE /wishlist/{clienteId}/produtos/{produtoId}`
+  - `DELETE /api/wishlist/{clienteId}/produtos/{produtoId}`
 - **Consultar produtos da wishlist:**
-  - `GET /wishlist/{clienteId}/produtos`
+  - `GET /api/wishlist/{clienteId}/produtos`
 - **Verificar se produto está na wishlist:**
-  - `GET /wishlist/{clienteId}/produtos/{produtoId}/existe`
+  - `GET /api/wishlist/{clienteId}/produtos/{produtoId}/existe`
 
 ## Testes
 - Para rodar os testes automatizados:

@@ -25,15 +25,21 @@ public class WishlistService {
     public Wishlist adicionarProdutoNaWishlist(String clienteId, String produtoId) {
         Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
         Produto produto = produtoFacade.buscarProdutoPorId(produtoId);
+
         WishlistValidator.validarLimiteProdutos(wishlist);
-        if (!WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId)) {
-            wishlist.getProdutos().add(produto);
+
+        if (WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId)) {
+            throw new RuntimeException("Produto já está na wishlist.");
         }
+
+        wishlist.getProdutos().add(produto);
+
         return wishlistRepository.save(wishlist);
     }
 
     public Wishlist removerProdutoDaWishlist(String clienteId, String produtoId) {
         Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
+
         boolean produtoExiste = WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId);
 
         if (!produtoExiste) {
@@ -56,9 +62,11 @@ public class WishlistService {
 
     public boolean produtoEstaNaWishlist(String clienteId, String produtoId) {
         Wishlist wishlist = wishlistFacade.buscarOuCriarWishlist(clienteId);
+
         if (wishlist == null || wishlist.getProdutos() == null) {
             throw new RuntimeException("Wishlist não encontrada.");
         }
+
         return WishlistValidator.produtoJaExisteNaWishlist(wishlist, produtoId);
     }
 }

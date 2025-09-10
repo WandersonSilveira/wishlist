@@ -60,13 +60,16 @@ class WishlistServiceTest {
         Wishlist wishlist = new Wishlist();
         wishlist.setClienteId(clienteId);
         ArrayList<Produto> produtos = new ArrayList<>();
-        produtos.add(produto);
+        produtos.add(produto); // Produto já existe na wishlist
         wishlist.setProdutos(produtos);
         when(wishlistFacade.buscarOuCriarWishlist(clienteId)).thenReturn(wishlist);
         when(produtoFacade.buscarProdutoPorId(produtoId)).thenReturn(produto);
-        when(wishlistRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-        Wishlist result = wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId);
-        assertEquals(1, result.getProdutos().size());
+        // Simula que o produto já existe na wishlist
+        // O método WishlistValidator.produtoJaExisteNaWishlist será chamado internamente
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            wishlistService.adicionarProdutoNaWishlist(clienteId, produtoId);
+        });
+        assertEquals("Produto já está na wishlist.", exception.getMessage());
     }
 
     @Test
